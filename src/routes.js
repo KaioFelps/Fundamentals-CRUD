@@ -11,7 +11,8 @@ export const routes = [
         handler: (req, res) => {
             const searchQuery = {
                 title: req.query.title !== undefined ? req.query.title.replaceAll("%20", " ") : "",
-                description: req.query.description !== undefined ? req.query.description.replaceAll("%20", " ") : ""
+                description: req.query.description !== undefined ? req.query.description.replaceAll("%20", " ") : "",
+                id: req.query.id !== undefined ? req.query.id : "",
             }
 
             const data = database.select("tasks", searchQuery)
@@ -61,7 +62,60 @@ export const routes = [
         method: "DELETE",
         path: buildRoutePath("/tasks/:id"),
         handler: (req, res) => {
-            return res.writeHead(200).end();
+            const { id } = req.params
+
+            if(!id) {
+                return res.writeHead(400).end()
+            }
+
+            database.delete("tasks", id)
+
+            return res.writeHead(204).end();
+        }
+    },
+    {
+        method: "PATCH",
+        path: buildRoutePath("/edittask/:id"),
+        handler: (req, res) => {
+            const { id } = req.params
+            const { title, description } = req.body
+
+            if (!title && !description) {
+                return res.writeHead(400).end("Não foram enviadas novas informações.");
+            }
+
+            const newData = {
+                title: title,
+                description: description,
+                updated_at: new Date().toISOString(),
+            }
+
+            database.update("tasks", id, newData)
+            res.writeHead(202).end()
+        }
+    },
+    {
+        method: "PATCH",
+        path: buildRoutePath("/tasks/:id/toggle"),
+        handler: (req, res) => {
+            const { id } = req.params
+            
+            const [currentTask] = database.select("tasks", { id, })
+            const { completed_at } = currentTask
+            
+            if (completed_at === null) {
+                database.update("tasks", id, {
+                    completed_at: new Date().toISOString()
+                })
+            }
+
+            else {
+                database.update("tasks", id, {
+                    completed_at: null
+                })
+            }
+
+            res.writeHead(201).end()
         }
     }
 ]

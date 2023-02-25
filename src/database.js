@@ -28,7 +28,7 @@ export class Database {
         let data = this.#database[table] ?? []
         
         const thereIsSearch =
-        search.title !== "" || search.description !== ""
+        search.title !== "" || search.description !== "" || search.id !== ""
 
         if (thereIsSearch) {
             const searchObjectParsedToArray = Object.entries(search)
@@ -37,14 +37,13 @@ export class Database {
             
             data = data.filter(row => {
                 return searchObjectParsedToArray.some(([key, value]) => {
-                    if (value === "" || value === undefined) return;
+                    if (value === "" || value === undefined || !value) return;
 
-                    if
-                    (
-                        row[key].toLocaleLowerCase().includes(value.toLocaleLowerCase())
-                        ||
-                        row[key].toLocaleLowerCase() === value.toLocaleLowerCase()
-                    ) {
+                    if (key.toLocaleLowerCase() === "id") {
+                        return row[key] === value
+                    }
+
+                    if (row[key].toLocaleLowerCase().includes(value.toLocaleLowerCase())) {
                         return row
                     }
                 })
@@ -67,19 +66,28 @@ export class Database {
     }
 
     delete(table, id) {
-        const rowIndex = this.#database.findIndex(row => row.id === id)
+        const rowIndex = this.#database[table].findIndex(row => row.id === id)
 
         if (rowIndex > -1) {
-            this.#database[table].slice(rowIndex, 1)
+            this.#database[table].splice(rowIndex, 1)
             this.#persist()
         }
     }
 
     update(table, id, data) {
-        const rowIndex = this.#database.findIndex(row => row.id === id)
+        const rowIndex = this.#database[table].findIndex(row => row.id === id)
 
         if(rowIndex > -1) {
-            this.#database[table][rowIndex] = {...data, id}
+            const dataParsedToArray = Object.entries(data)
+
+            dataParsedToArray.forEach(([key, value]) => {
+                if (value === undefined) {
+                    return;
+                }
+
+                this.#database[table][rowIndex][key] = value
+            })
+
             this.#persist()
         }
     }
