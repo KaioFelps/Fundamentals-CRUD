@@ -27,14 +27,26 @@ export class Database {
     select(table, search) {
         let data = this.#database[table] ?? []
         
-        if (search) {
+        const thereIsSearch =
+        search.title !== "" || search.description !== ""
+
+        if (thereIsSearch) {
             const searchObjectParsedToArray = Object.entries(search)
-            // {name: "kaio", email: "kaio"}
-            // [ [ 'name', 'kaio' ], [ 'email', 'kaio' ] ]
+            // {title: "suco", description: "fazer suco"}
+            // [ [ 'title', 'suco' ], [ 'description', 'fazer suco' ] ]
             
-            data.filter(row => {
+            data = data.filter(row => {
                 return searchObjectParsedToArray.some(([key, value]) => {
-                    return row[key.toLocaleLowerCase()].includes(value.toLocaleLowerCase())
+                    if (value === "" || value === undefined) return;
+
+                    if
+                    (
+                        row[key].toLocaleLowerCase().includes(value.toLocaleLowerCase())
+                        ||
+                        row[key].toLocaleLowerCase() === value.toLocaleLowerCase()
+                    ) {
+                        return row
+                    }
                 })
             })
         }
@@ -46,9 +58,8 @@ export class Database {
         if (Array.isArray(this.#database[table])) {
             this.#database[table].push(data)
         }
-
         else {
-            this.#database[table] = data
+            this.#database[table] = [data]
         }
 
         this.#persist()
