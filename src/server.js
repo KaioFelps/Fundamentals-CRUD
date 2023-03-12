@@ -1,5 +1,5 @@
 import http from "node:http"
-import { getReqBody } from "./utils/get-req-body.js"
+import getReqBody from "./utils/get-req-body.js"
 import { getQueryParams } from "./utils/get-query-params.js"
 import { routes } from "./routes.js"
 
@@ -7,7 +7,7 @@ const server = http.createServer(async (req, res) => {
     const { url, method } = req
     const activeRoute = routes.find(route => route.method === method && route.path.test(url))
 
-    await getReqBody(req, res)
+    await getReqBody(req)
     
     if (activeRoute === undefined) {
         return res.writeHead(404).end()
@@ -23,4 +23,4 @@ const server = http.createServer(async (req, res) => {
     activeRoute.handler(req, res)
 })
 
-server.listen(80)   
+server.listen(80)

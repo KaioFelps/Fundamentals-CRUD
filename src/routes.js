@@ -2,6 +2,9 @@ import { randomUUID } from "node:crypto"
 import { Database } from "./database.js"
 import { buildRoutePath } from "./utils/build-route-path.js"
 
+import { parse } from "csv-parse"
+import stream from "node:stream"
+
 const database = new Database()
 
 export const routes = [
@@ -56,6 +59,48 @@ export const routes = [
 
             database.insert("tasks", newTask)
             return res.writeHead(201).end()
+        }
+    },
+    {
+        method: "POST",
+        path: buildRoutePath("/upload"),
+        handler: (req, res) => {
+            const csvTasks = []
+
+            const streamBuffer = new stream.PassThrough()
+
+            streamBuffer.end(req.body)
+
+            streamBuffer.pipe(parse({from_line: 2, delimiter: ","}))
+                .on("data", (data) => {
+                    return csvTasks.push({
+                        title: data[0],
+                        description: data[1]
+                    })
+                })
+                .on("end", () => {
+                    csvTasks.forEach((task) => {
+                        if(!task.title || !task.description) return;
+                        if(task.title.length < 1 || task.description.length < 1) return;
+
+                        const newTask = {
+                            id: randomUUID(),
+                            title: task.title,
+                            description: task.description,
+                            completed_at: null,
+                            created_at: new Date().toISOString(),
+                            updated_at: null,
+                        }
+
+                        database.insert("tasks", newTask)
+                        
+                        return res.writeHead(201).end()
+                    })
+                })
+                .on("error", (error) => {
+                    console.log(error)
+                    res.writeHead(500).end()
+                })
         }
     },
     {

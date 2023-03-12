@@ -9,5 +9,12 @@
   },
   "keywords": [],
   "author": "Kaio Felps",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "csv-parse": "^5.3.6",
+    "zod": "^3.20.6"
+  },
+  "devDependencies": {
+    "prisma": "^4.10.1"
+  }
 }
