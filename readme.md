@@ -14,3 +14,8 @@ With this API, I should be able to:
 
 More informations:<br/>
 <a href="https://efficient-sloth-d85.notion.site/Desafio-01-2d48608f47644519a408b438b52d913f" target="_blank">Desafio 01 - Notion</a>
+
+---
+
+*Env content*
+`DATABASE_URL="file:./dev.db"`
